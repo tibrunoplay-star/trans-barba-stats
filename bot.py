@@ -116,24 +116,31 @@ async def on_message(message):
                     detalhes
                 )
 
-               if match:
+              if detalhes:
 
-    km = int(match.group(1).replace(" ", ""))
+    match = re.search(
+        r"Distância Aceita:\s*([\d\s]+)\s*km",
+        detalhes
+    )
 
-    with conn.cursor() as cur:
+    if match:
 
-        cur.execute("""
-            INSERT INTO ranking_semanal (motorista, km)
-            VALUES (%s, %s)
-            ON CONFLICT (motorista)
-            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-        """, (motorista, km))
+        km = int(match.group(1).replace(" ", ""))
 
-        conn.commit()
+        with conn.cursor() as cur:
 
-    print(f"{motorista} +{km} km")
+            cur.execute("""
+                INSERT INTO ranking_semanal (motorista, km)
+                VALUES (%s, %s)
+                ON CONFLICT (motorista)
+                DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+            """, (motorista, km))
 
-    await atualizar_lider()
+            conn.commit()
+
+        print(f"{motorista} +{km} km")
+
+        await atualizar_lider()
 
         except Exception as e:
             print("ERRO:", e)
