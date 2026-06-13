@@ -79,13 +79,15 @@ async def on_ready():
     scheduler.add_job(
         publicar_ranking,
         "cron",
-        minute="*/1"   # teste: executa todos os minutos
+        day_of_week="sun",
+        hour=23,
+        minute=59
     )
 
     scheduler.start()
 
     print("Agendador semanal iniciado.")
-
+    
 @bot.event
 async def on_message(message):
 
