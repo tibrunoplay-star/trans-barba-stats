@@ -120,18 +120,20 @@ async def on_message(message):
 
                     km = int(match.group(1).replace(" ", ""))
 
-                    with conn.cursor() as cur:
-                        cur.execute("""
-                            INSERT INTO ranking_semanal (motorista, km)
-                            VALUES (%s, %s)
-                            ON CONFLICT (motorista)
-                            DO UPDATE SET
-                            km = ranking_semanal.km + EXCLUDED.km
-                        """, (motorista, km))
+                  with conn.cursor() as cur:
 
-                        conn.commit()
+    cur.execute("""
+        INSERT INTO ranking_semanal (motorista, km)
+        VALUES (%s, %s)
+        ON CONFLICT (motorista)
+        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+    """, (motorista, km))
 
-                    print(f"{motorista} +{km} km")
+    conn.commit()
+
+print(f"{motorista} +{km} km")
+
+await atualizar_lider()
 
         except Exception as e:
             print("ERRO:", e)
@@ -164,3 +166,31 @@ async def ranking(ctx):
     await ctx.send(f"```{texto}```")
 
 bot.run(TOKEN)
+
+CANAL_LIDER_ID = 1515340410694664344
+
+async def atualizar_lider():
+
+    canal = bot.get_channel(CANAL_LIDER_ID)
+
+    if canal is None:
+        return
+
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT motorista, km
+            FROM ranking_semanal
+            ORDER BY km DESC
+            LIMIT 1
+        """)
+
+        resultado = cur.fetchone()
+
+    if resultado is None:
+        return
+
+    motorista, km = resultado
+
+    await canal.send(
+        f"👑 Líder Atual\n\n🚚 {motorista}\n📏 {km:,} km"
+    )
