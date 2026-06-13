@@ -116,24 +116,24 @@ async def on_message(message):
                     detalhes
                 )
 
-                if match:
+               if match:
 
-                    km = int(match.group(1).replace(" ", ""))
+    km = int(match.group(1).replace(" ", ""))
 
-                  with conn.cursor() as cur:
+    with conn.cursor() as cur:
 
-    cur.execute("""
-        INSERT INTO ranking_semanal (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-    """, (motorista, km))
+        cur.execute("""
+            INSERT INTO ranking_semanal (motorista, km)
+            VALUES (%s, %s)
+            ON CONFLICT (motorista)
+            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+        """, (motorista, km))
 
-    conn.commit()
+        conn.commit()
 
-print(f"{motorista} +{km} km")
+    print(f"{motorista} +{km} km")
 
-await atualizar_lider()
+    await atualizar_lider()
 
         except Exception as e:
             print("ERRO:", e)
