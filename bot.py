@@ -14,7 +14,11 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Ligação à base de dados
+
 conn = psycopg.connect(DATABASE_URL)
+
+# Criar tabela se não existir
 
 with conn.cursor() as cur:
 cur.execute("""
@@ -33,11 +37,13 @@ print(f"Bot ligado: {bot.user}")
 async def on_message(message):
 
 ```
+# Apenas mensagens automáticas com embeds
 if message.author.bot and message.embeds:
 
     try:
         embed = message.embeds[0]
 
+        # Nome do motorista
         motorista = embed.author.name
 
         detalhes = None
@@ -61,7 +67,6 @@ if message.author.bot and message.embeds:
                 )
 
                 with conn.cursor() as cur:
-
                     cur.execute("""
                         INSERT INTO ranking_semanal
                         (motorista, km)
