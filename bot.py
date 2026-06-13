@@ -1,3 +1,4 @@
+:::writing{variant="document" id="84521"}
 import discord
 from discord.ext import commands
 import psycopg
@@ -7,110 +8,101 @@ import re
 TOKEN = os.getenv("DISCORD_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-CANAL_RANKING = 1515340150920446112
-
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Ligação à base de dados
-
 conn = psycopg.connect(DATABASE_URL)
 
-# Criar tabela se não existir
-
 with conn.cursor() as cur:
-cur.execute("""
-CREATE TABLE IF NOT EXISTS ranking_semanal (
-motorista TEXT PRIMARY KEY,
-km BIGINT NOT NULL DEFAULT 0
-)
-""")
-conn.commit()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS ranking_semanal (
+            motorista TEXT PRIMARY KEY,
+            km BIGINT NOT NULL DEFAULT 0
+        )
+    """)
+    conn.commit()
+
 
 @bot.event
 async def on_ready():
-print(f"Bot ligado: {bot.user}")
+    print(f"Bot ligado: {bot.user}")
+
 
 @bot.event
 async def on_message(message):
 
-```
-# Apenas mensagens automáticas com embeds
-if message.author.bot and message.embeds:
+    if message.author.bot and message.embeds:
 
-    try:
-        embed = message.embeds[0]
+        try:
+            embed = message.embeds[0]
 
-        # Nome do motorista
-        motorista = embed.author.name
+            motorista = embed.author.name
 
-        detalhes = None
+            detalhes = None
 
-        for field in embed.fields:
-            if field.name == "Detalhes":
-                detalhes = field.value
-                break
+            for field in embed.fields:
+                if field.name == "Detalhes":
+                    detalhes = field.value
+                    break
 
-        if detalhes:
+            if detalhes:
 
-            match = re.search(
-                r"Distância Aceita:\s*([\d\s]+)\s*km",
-                detalhes
-            )
-
-            if match:
-
-                km = int(
-                    match.group(1).replace(" ", "")
+                match = re.search(
+                    r"Distância Aceita:\s*([\d\s]+)\s*km",
+                    detalhes
                 )
 
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        INSERT INTO ranking_semanal
-                        (motorista, km)
-                        VALUES (%s, %s)
-                        ON CONFLICT (motorista)
-                        DO UPDATE SET
-                        km = ranking_semanal.km + EXCLUDED.km
-                    """, (motorista, km))
+                if match:
 
-                    conn.commit()
+                    km = int(match.group(1).replace(" ", ""))
 
-                print(f"{motorista} +{km} km")
+                    with conn.cursor() as cur:
+                        cur.execute("""
+                            INSERT INTO ranking_semanal
+                            (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET
+                            km = ranking_semanal.km + EXCLUDED.km
+                        """, (motorista, km))
 
-    except Exception as e:
-        print("ERRO:", e)
+                        conn.commit()
 
-await bot.process_commands(message)
-```
+                    print(f"{motorista} +{km} km")
+
+        except Exception as e:
+            print("ERRO:", e)
+
+    await bot.process_commands(message)
+
 
 @bot.command()
 async def ranking(ctx):
 
-````
-with conn.cursor() as cur:
+    with conn.cursor() as cur:
 
-    cur.execute("""
-        SELECT motorista, km
-        FROM ranking_semanal
-        ORDER BY km DESC
-        LIMIT 10
-    """)
+        cur.execute("""
+            SELECT motorista, km
+            FROM ranking_semanal
+            ORDER BY km DESC
+            LIMIT 10
+        """)
 
-    rows = cur.fetchall()
+        rows = cur.fetchall()
 
-if not rows:
-    await ctx.send("Sem dados.")
-    return
+    if not rows:
+        await ctx.send("Sem dados.")
+        return
 
-texto = "🏆 Ranking Semanal\n\n"
+    texto = "🏆 Ranking Semanal\n\n"
 
-for pos, (nome, km) in enumerate(rows, start=1):
-    texto += f"{pos}. {nome} - {km:,} km\n"
+    for pos, (nome, km) in enumerate(rows, start=1):
+        texto += f"{pos}. {nome} - {km:,} km\n"
 
-await ctx.send(f"```{texto}```")
-````
+    await ctx.send(f"```{texto}```")
+
 
 bot.run(TOKEN)
+:::
