@@ -202,5 +202,10 @@ async def atualizar_lider():
         )
     )
 
+@bot.command()
+async def lider(ctx):
+    await atualizar_lider()
+    await ctx.send("Líder atualizado.")
+
 bot.run(TOKEN)
 
