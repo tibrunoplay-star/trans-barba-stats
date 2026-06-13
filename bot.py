@@ -1,3 +1,49 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime
+
+RANKING_CHANNEL_ID = 1515340150920446112
+
+async def publicar_ranking():
+
+    canal = bot.get_channel(RANKING_CHANNEL_ID)
+
+    if canal is None:
+        return
+
+    with conn.cursor() as cur:
+
+        cur.execute("""
+            SELECT motorista, km
+            FROM ranking_semanal
+            ORDER BY km DESC
+            LIMIT 10
+        """)
+
+        rows = cur.fetchall()
+
+    if not rows:
+        await canal.send("Nenhum registo esta semana.")
+        return
+
+    texto = "🏆 **RANKING SEMANAL TRANS BARBA** 🏆\n\n"
+
+    medalhas = ["🥇", "🥈", "🥉"]
+
+    for pos, (nome, km) in enumerate(rows, start=1):
+
+        if pos <= 3:
+            texto += f"{medalhas[pos-1]} {nome} — {km:,} km\n"
+        else:
+            texto += f"{pos}. {nome} — {km:,} km\n"
+
+    await canal.send(texto)
+
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM ranking_semanal")
+        conn.commit()
+
+    print("Ranking semanal publicado e reiniciado.")
+
 import os
 import re
 import discord
@@ -25,7 +71,20 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
+
     print(f"Bot ligado: {bot.user}")
+
+    scheduler = AsyncIOScheduler()
+
+    scheduler.add_job(
+        publicar_ranking,
+        "cron",
+        minute="*/1"   # teste: executa todos os minutos
+    )
+
+    scheduler.start()
+
+    print("Agendador semanal iniciado.")
 
 @bot.event
 async def on_message(message):
