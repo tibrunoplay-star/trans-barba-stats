@@ -1,43 +1,53 @@
 import discord
 from discord.ext import commands
+import psycopg
 import os
 import re
-import json
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+CANAL_RANKING = 1515340150920446112
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-ARQUIVO = "ranking.json"
+conn = psycopg.connect(DATABASE_URL)
 
-def carregar():
-    if os.path.exists(ARQUIVO):
-        with open(ARQUIVO, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-def guardar(dados):
-    with open(ARQUIVO, "w", encoding="utf-8") as f:
-        json.dump(dados, f, ensure_ascii=False, indent=4)
+with conn.cursor() as cur:
+cur.execute("""
+CREATE TABLE IF NOT EXISTS ranking_semanal (
+motorista TEXT PRIMARY KEY,
+km BIGINT NOT NULL DEFAULT 0
+)
+""")
+conn.commit()
 
 @bot.event
 async def on_ready():
-    print(f"Bot ligado: {bot.user}")
+print(f"Bot ligado: {bot.user}")
 
 @bot.event
 async def on_message(message):
 
-    if message.author.bot and message.embeds:
+```
+if message.author.bot and message.embeds:
 
+    try:
         embed = message.embeds[0]
 
-        try:
-            motorista = embed.author.name
+        motorista = embed.author.name
 
-            detalhes = embed.fields[2].value
+        detalhes = None
+
+        for field in embed.fields:
+            if field.name == "Detalhes":
+                detalhes = field.value
+                break
+
+        if detalhes:
 
             match = re.search(
                 r"Distância Aceita:\s*([\d\s]+)\s*km",
@@ -46,43 +56,59 @@ async def on_message(message):
 
             if match:
 
-                km = int(match.group(1).replace(" ", ""))
-
-                ranking = carregar()
-
-                ranking[motorista] = ranking.get(motorista, 0) + km
-
-                guardar(ranking)
-
-                print(
-                    f"{motorista} +{km} km | Total: {ranking[motorista]}"
+                km = int(
+                    match.group(1).replace(" ", "")
                 )
 
-        except Exception as e:
-            print("ERRO:", e)
+                with conn.cursor() as cur:
 
-    await bot.process_commands(message)
+                    cur.execute("""
+                        INSERT INTO ranking_semanal
+                        (motorista, km)
+                        VALUES (%s, %s)
+                        ON CONFLICT (motorista)
+                        DO UPDATE SET
+                        km = ranking_semanal.km + EXCLUDED.km
+                    """, (motorista, km))
+
+                    conn.commit()
+
+                print(
+                    f"{motorista} +{km} km"
+                )
+
+    except Exception as e:
+        print("ERRO:", e)
+
+await bot.process_commands(message)
+```
 
 @bot.command()
 async def ranking(ctx):
 
-    dados = carregar()
+````
+with conn.cursor() as cur:
 
-    if not dados:
-        await ctx.send("Sem dados.")
-        return
+    cur.execute("""
+        SELECT motorista, km
+        FROM ranking_semanal
+        ORDER BY km DESC
+        LIMIT 10
+    """)
 
-    ordenado = sorted(
-        dados.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )
+    rows = cur.fetchall()
 
-    texto = "🏆 Ranking da Trans Barba\n\n"
+if not rows:
+    await ctx.send("Sem dados.")
+    return
 
-    for pos, (nome, km) in enumerate(ordenado[:10], start=1):
-        texto += f"{pos}. {nome} - {km:,} km\n"
+texto = "🏆 Ranking Semanal\\n\\n"
 
-    await ctx.send(f"```{texto}```")
+for pos, (nome, km) in enumerate(rows, start=1):
+    texto += f"{pos}. {nome} - {km:,} km\\n"
+
+await ctx.send(f"```{texto}```")
+````
 
 bot.run(TOKEN)
+
