@@ -116,31 +116,24 @@ async def on_message(message):
                     detalhes
                 )
 
-              if detalhes:
+                if match:
 
-    match = re.search(
-        r"Distância Aceita:\s*([\d\s]+)\s*km",
-        detalhes
-    )
+                    km = int(match.group(1).replace(" ", ""))
 
-    if match:
+                    with conn.cursor() as cur:
 
-        km = int(match.group(1).replace(" ", ""))
+                        cur.execute("""
+                            INSERT INTO ranking_semanal (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+                        """, (motorista, km))
 
-        with conn.cursor() as cur:
+                        conn.commit()
 
-            cur.execute("""
-                INSERT INTO ranking_semanal (motorista, km)
-                VALUES (%s, %s)
-                ON CONFLICT (motorista)
-                DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-            """, (motorista, km))
+                    print(f"{motorista} +{km} km")
 
-            conn.commit()
-
-        print(f"{motorista} +{km} km")
-
-        await atualizar_lider()
+                    await atualizar_lider()
 
         except Exception as e:
             print("ERRO:", e)
@@ -172,8 +165,6 @@ async def ranking(ctx):
 
     await ctx.send(f"```{texto}```")
 
-bot.run(TOKEN)
-
 CANAL_LIDER_ID = 1515340410694664344
 
 async def atualizar_lider():
@@ -201,3 +192,7 @@ async def atualizar_lider():
     await canal.send(
         f"👑 Líder Atual\n\n🚚 {motorista}\n📏 {km:,} km"
     )
+
+
+bot.run(TOKEN)
+
