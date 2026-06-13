@@ -73,9 +73,7 @@ if message.author.bot and message.embeds:
 
                     conn.commit()
 
-                print(
-                    f"{motorista} +{km} km"
-                )
+                print(f"{motorista} +{km} km")
 
     except Exception as e:
         print("ERRO:", e)
@@ -102,13 +100,12 @@ if not rows:
     await ctx.send("Sem dados.")
     return
 
-texto = "🏆 Ranking Semanal\\n\\n"
+texto = "🏆 Ranking Semanal\n\n"
 
 for pos, (nome, km) in enumerate(rows, start=1):
-    texto += f"{pos}. {nome} - {km:,} km\\n"
+    texto += f"{pos}. {nome} - {km:,} km\n"
 
 await ctx.send(f"```{texto}```")
 ````
 
 bot.run(TOKEN)
-
