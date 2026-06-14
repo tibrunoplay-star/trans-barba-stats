@@ -176,6 +176,7 @@ async def atualizar_lider():
         return
 
     with conn.cursor() as cur:
+
         cur.execute("""
             SELECT motorista, km
             FROM ranking_semanal
@@ -190,11 +191,19 @@ async def atualizar_lider():
 
     motorista, km = resultado
 
-    await canal.send(
-        "👑 **LÍDER DA SEMANA** 👑\n\n"
-        f"🚚 Motorista: **{motorista}**\n"
-        f"📏 Quilómetros: **{km:,} km**"
-    )
+    try:
+
+        mensagem = await canal.fetch_message(MENSAGEM_LIDER_ID)
+
+        await mensagem.edit(
+            content=
+            "👑 **LÍDER DA SEMANA** 👑\n\n"
+            f"🚚 Motorista: **{motorista}**\n"
+            f"📏 Quilómetros: **{km:,} km**"
+        )
+
+    except Exception as e:
+        print(f"Erro ao atualizar líder: {e}")
 
 @bot.command()
 async def lider(ctx):
