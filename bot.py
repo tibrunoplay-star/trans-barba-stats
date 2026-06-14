@@ -197,7 +197,7 @@ async def atualizar_lider():
 
         await mensagem.edit(
             content=
-            "👑 **LÍDER DA SEMANA** 👑\n\n"
+            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
             f"🚚 Motorista: **{motorista}**\n"
             f"📏 Quilómetros: **{km:,} km**"
         )
