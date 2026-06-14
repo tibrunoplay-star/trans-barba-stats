@@ -190,16 +190,16 @@ async def atualizar_lider():
 
     motorista, km = resultado
 
-   await canal.send(
-    "👑 **LÍDER DA SEMANA** 👑\n\n"
-    f"🚚 Motorista: **{motorista}**\n"
-    f"📏 Quilómetros: **{km:,} km**"
-)
+    await canal.send(
+        "👑 **LÍDER DA SEMANA** 👑\n\n"
+        f"🚚 Motorista: **{motorista}**\n"
+        f"📏 Quilómetros: **{km:,} km**"
+    )
 
 @bot.command()
 async def lider(ctx):
     await atualizar_lider()
     await ctx.send("Líder atualizado.")
-
+    
 bot.run(TOKEN)
 
