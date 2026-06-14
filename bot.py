@@ -206,9 +206,11 @@ async def atualizar_lider():
         print(f"Erro ao atualizar líder: {e}")
 
 @bot.command()
-async def lider(ctx):
-    await atualizar_lider()
-    await ctx.send("Líder atualizado.")
+async def criar_lider(ctx):
+
+    msg = await ctx.send("A carregar líder...")
+
+    print("ID DA MENSAGEM:", msg.id)
     
 bot.run(TOKEN)
 
