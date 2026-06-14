@@ -166,7 +166,7 @@ async def ranking(ctx):
     await ctx.send(f"```{texto}```")
 
 CANAL_LIDER_ID = 1515340410694664344
-MENSAGEM_LIDER_ID = 1515518894813483059
+MENSAGEM_LIDER_ID = 1515530962837045370
 
 async def atualizar_lider():
 
