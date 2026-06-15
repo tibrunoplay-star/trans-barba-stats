@@ -80,7 +80,7 @@ async def on_ready():
         publicar_ranking,
         "cron",
         day_of_week="sun",
-        hour=23,
+        hour=22,
         minute=59
     )
 
