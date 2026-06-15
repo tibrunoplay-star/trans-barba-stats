@@ -101,25 +101,6 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
-async def on_ready():
-
-    print(f"Bot ligado: {bot.user}")
-
-    scheduler = AsyncIOScheduler()
-
-    scheduler.add_job(
-        publicar_ranking,
-        "cron",
-        day_of_week="sun",
-        hour=22,
-        minute=59
-    )
-
-    scheduler.start()
-
-    print("Agendador semanal iniciado.")
-    
-@bot.event
 async def on_message(message):
 
 if message.author.bot and message.embeds:
