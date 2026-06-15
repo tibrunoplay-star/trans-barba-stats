@@ -165,17 +165,14 @@ async def ranking(ctx):
 
     await ctx.send(f"```{texto}```")
 
-async def atualizar_lider():
-
 CANAL_LIDER_ID = 1515340410694664344
 MENSAGEM_LIDER_ID = 1515533850128945242
 
-print("atualizar_lider() foi chamada")
+async def atualizar_lider():
 
     canal = bot.get_channel(CANAL_LIDER_ID)
 
     if canal is None:
-        print("Canal não encontrado")
         return
 
     with conn.cursor() as cur:
@@ -189,34 +186,24 @@ print("atualizar_lider() foi chamada")
 
         resultado = cur.fetchone()
 
-    print("Resultado BD:", resultado)
-
     if resultado is None:
-        print("Sem dados na tabela")
         return
 
     motorista, km = resultado
 
     try:
 
-        print("A procurar mensagem:", MENSAGEM_LIDER_ID)
-
         mensagem = await canal.fetch_message(MENSAGEM_LIDER_ID)
-
-        print("Mensagem encontrada")
 
         await mensagem.edit(
             content=
-            "👑 **LÍDER DA SEMANA** 👑\n\n"
+            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
             f"🚚 Motorista: **{motorista}**\n"
             f"📏 Quilómetros: **{km:,} km**"
         )
 
-        print("Mensagem atualizada")
-
     except Exception as e:
-        print("ERRO LIDER:", e)
-
+        print(f"Erro ao atualizar líder: {e}")
 
 @bot.command()
 async def criar_lider(ctx):
@@ -226,4 +213,3 @@ async def criar_lider(ctx):
     print("ID DA MENSAGEM:", msg.id)
     
 bot.run(TOKEN)
-
