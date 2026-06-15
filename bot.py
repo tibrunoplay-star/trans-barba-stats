@@ -39,8 +39,31 @@ async def publicar_ranking():
     await canal.send(texto)
 
     with conn.cursor() as cur:
-        cur.execute("DELETE FROM ranking_semanal")
-        conn.commit()
+    cur.execute("DELETE FROM ranking_semanal")
+    cur.execute("DELETE FROM lider_semanal")
+
+conn.commit()
+
+      try:
+
+    canal_lider = bot.get_channel(CANAL_LIDER_ID)
+
+    if canal_lider:
+
+        mensagem = await canal_lider.fetch_message(
+            MENSAGEM_LIDER_ID
+        )
+
+        await mensagem.edit(
+            content=
+            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
+            "🚚 Ainda não existe líder esta semana.\n"
+            "📏 Quilómetros: **0 km**"
+        )
+
+except Exception as e:
+    print(f"Erro ao reiniciar líder: {e}")
+   
 
     print("Ranking semanal publicado e reiniciado.")
 
@@ -62,6 +85,14 @@ with conn.cursor() as cur:
             km BIGINT NOT NULL DEFAULT 0
         )
     """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS lider_semanal (
+            motorista TEXT PRIMARY KEY,
+            km BIGINT NOT NULL DEFAULT 0
+        )
+    """)
+
     conn.commit()
 
 intents = discord.Intents.default()
@@ -122,14 +153,24 @@ async def on_message(message):
 
                     with conn.cursor() as cur:
 
-                        cur.execute("""
-                            INSERT INTO ranking_semanal (motorista, km)
-                            VALUES (%s, %s)
-                            ON CONFLICT (motorista)
-                            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-                        """, (motorista, km))
+    # Ranking semanal (acumula)
+    cur.execute("""
+        INSERT INTO ranking_semanal (motorista, km)
+        VALUES (%s, %s)
+        ON CONFLICT (motorista)
+        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+    """, (motorista, km))
 
-                        conn.commit()
+    # Líder semanal (melhor entrega)
+    cur.execute("""
+        INSERT INTO lider_semanal (motorista, km)
+        VALUES (%s, %s)
+        ON CONFLICT (motorista)
+        DO UPDATE SET km =
+            GREATEST(lider_semanal.km, EXCLUDED.km)
+    """, (motorista, km))
+
+    conn.commit()
 
                     print(f"{motorista} +{km} km")
 
@@ -147,10 +188,9 @@ async def ranking(ctx):
 
         cur.execute("""
             SELECT motorista, km
-            FROM ranking_semanal
+            FROM lider_semanal
             ORDER BY km DESC
-            LIMIT 10
-        """)
+            LIMIT 1
 
         rows = cur.fetchall()
 
