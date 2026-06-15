@@ -198,12 +198,13 @@ async def atualizar_lider():
 
     with conn.cursor() as cur:
 
-cur.execute("""
-    SELECT motorista, km
-    FROM lider_semanal
-    ORDER BY km DESC
-    LIMIT 1
-""")
+        cur.execute("""
+            SELECT motorista, km
+            FROM lider_semanal
+            ORDER BY km DESC
+            LIMIT 1
+        """)
+
         resultado = cur.fetchone()
 
     if resultado is None:
