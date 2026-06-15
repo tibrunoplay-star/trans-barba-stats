@@ -234,6 +234,7 @@ async def criar_lider(ctx):
     print("ID DA MENSAGEM:", msg.id)
 
 async def atualizar_lider():
+    
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def reset_lider(ctx):
@@ -260,5 +261,4 @@ async def reset_lider(ctx):
 
 bot.run(TOKEN)
 
-bot.run(TOKEN)
     
