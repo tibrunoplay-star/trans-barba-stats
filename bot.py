@@ -112,54 +112,53 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-        motorista = embed.author.name
+            motorista = embed.author.name
 
-        detalhes = None
+            detalhes = None
 
-        for field in embed.fields:
-            if field.name == "Detalhes":
-                detalhes = field.value
-                break
+            for field in embed.fields:
+                if field.name == "Detalhes":
+                    detalhes = field.value
+                    break
 
-        if detalhes:
+            if detalhes:
 
-            match = re.search(
-                r"Distância Aceita:\s*([\d\s]+)\s*km",
-                detalhes
-            )
+                match = re.search(
+                    r"Distância Aceita:\s*([\d\s]+)\s*km",
+                    detalhes
+                )
 
-            if match:
+                if match:
 
-                km = int(match.group(1).replace(" ", ""))
+                    km = int(match.group(1).replace(" ", ""))
 
-                with conn.cursor() as cur:
+                    with conn.cursor() as cur:
 
-                    cur.execute("""
-                        INSERT INTO ranking_semanal (motorista, km)
-                        VALUES (%s, %s)
-                        ON CONFLICT (motorista)
-                        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-                    """, (motorista, km))
+                        cur.execute("""
+                            INSERT INTO ranking_semanal (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+                        """, (motorista, km))
 
-                    cur.execute("""
-                        INSERT INTO lider_semanal (motorista, km)
-                        VALUES (%s, %s)
-                        ON CONFLICT (motorista)
-                        DO UPDATE SET km =
-                            GREATEST(lider_semanal.km, EXCLUDED.km)
-                    """, (motorista, km))
+                        cur.execute("""
+                            INSERT INTO lider_semanal (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET km =
+                                GREATEST(lider_semanal.km, EXCLUDED.km)
+                        """, (motorista, km))
 
-                conn.commit()
+                    conn.commit()
 
-                print(f"{motorista} +{km} km")
+                    print(f"{motorista} +{km} km")
 
-                await atualizar_lider()
+                    await atualizar_lider()
 
-    except Exception as e:
-        print("ERRO:", e)
+        except Exception as e:
+            print("ERRO:", e)
 
-await bot.process_commands(message)
-```
+    await bot.process_commands(message)
 
 
 @bot.command()
