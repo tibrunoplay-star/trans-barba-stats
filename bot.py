@@ -38,7 +38,7 @@ async def publicar_ranking():
 
     await canal.send(texto)
 
-    with conn.cursor() as cur:
+   with conn.cursor() as cur:
     cur.execute("DELETE FROM ranking_semanal")
     cur.execute("DELETE FROM lider_semanal")
     conn.commit()
