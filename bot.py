@@ -39,33 +39,33 @@ async def publicar_ranking():
     await canal.send(texto)
 
     with conn.cursor() as cur:
-    cur.execute("DELETE FROM ranking_semanal")
-    cur.execute("DELETE FROM lider_semanal")
+        cur.execute("DELETE FROM ranking_semanal")
+        cur.execute("DELETE FROM lider_semanal")
 
-conn.commit()
+    conn.commit()
 
-      try:
+    try:
 
-    canal_lider = bot.get_channel(CANAL_LIDER_ID)
+       canal_lider = bot.get_channel(CANAL_LIDER_ID)
 
-    if canal_lider:
+       if canal_lider:
 
-        mensagem = await canal_lider.fetch_message(
-            MENSAGEM_LIDER_ID
+          mensagem = await canal_lider.fetch_message(
+              MENSAGEM_LIDER_ID
+         )
+
+         await mensagem.edit(
+             content=
+             "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
+             "🚚 Ainda não existe líder esta semana.\n"
+             "📏 Quilómetros: **0 km**"
         )
 
-        await mensagem.edit(
-            content=
-            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
-            "🚚 Ainda não existe líder esta semana.\n"
-            "📏 Quilómetros: **0 km**"
-        )
-
-except Exception as e:
-    print(f"Erro ao reiniciar líder: {e}")
+   except Exception as e:
+       print(f"Erro ao reiniciar líder: {e}")
    
 
-    print("Ranking semanal publicado e reiniciado.")
+   print("Ranking semanal publicado e reiniciado.")
 
 import os
 import re
