@@ -114,9 +114,10 @@ async def on_message(message):
 
             motorista = embed.author.name
 
-        detalhes = None
+            detalhes = None
 
-        for field in embed.fields:
+           for field in embed.fields:
+            
             if field.name == "Detalhes":
                 detalhes = field.value
                 break
