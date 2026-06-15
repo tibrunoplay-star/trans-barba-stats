@@ -103,21 +103,21 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_message(message):
 
-    if message.author.bot and message.embeds:
+```
+if message.author.bot and message.embeds:
 
-        try:
-            embed = message.embeds[0]
+    try:
+        embed = message.embeds[0]
 
-            if not embed.author:
-                await bot.process_commands(message)
-                return
+        if not embed.author:
+            await bot.process_commands(message)
+            return
 
-            motorista = embed.author.name
+        motorista = embed.author.name
 
-            detalhes = None
+        detalhes = None
 
-           for field in embed.fields:
-            
+        for field in embed.fields:
             if field.name == "Detalhes":
                 detalhes = field.value
                 break
@@ -160,6 +160,8 @@ async def on_message(message):
         print("ERRO:", e)
 
 await bot.process_commands(message)
+```
+
 
 @bot.command()
 async def ranking(ctx):
