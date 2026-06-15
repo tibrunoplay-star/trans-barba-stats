@@ -233,7 +233,6 @@ async def criar_lider(ctx):
 
     print("ID DA MENSAGEM:", msg.id)
 
-async def atualizar_lider():
     
 @bot.command()
 @commands.has_permissions(administrator=True)
