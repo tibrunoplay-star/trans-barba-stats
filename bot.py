@@ -105,14 +105,14 @@ async def on_message(message):
 
     if message.author.bot and message.embeds:
 
-    try:
-        embed = message.embeds[0]
+        try:
+            embed = message.embeds[0]
 
-        if not embed.author:
-            await bot.process_commands(message)
-            return
+            if not embed.author:
+                await bot.process_commands(message)
+                return
 
-        motorista = embed.author.name
+            motorista = embed.author.name
 
         detalhes = None
 
