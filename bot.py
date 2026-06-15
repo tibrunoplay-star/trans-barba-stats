@@ -165,14 +165,12 @@ async def ranking(ctx):
 
     await ctx.send(f"```{texto}```")
 
+  async def publicar_ranking():
+
 CANAL_LIDER_ID = 1515340410694664344
 MENSAGEM_LIDER_ID = 1515533850128945242
 
-async def atualizar_lider():
-
-    canal = bot.get_channel(CANAL_LIDER_ID)
-
-    if canal is None:
+if canal_ranking is None:
         return
 
     with conn.cursor() as cur:
@@ -181,30 +179,59 @@ async def atualizar_lider():
             SELECT motorista, km
             FROM ranking_semanal
             ORDER BY km DESC
-            LIMIT 1
+            LIMIT 10
         """)
 
-        resultado = cur.fetchone()
+        rows = cur.fetchall()
 
-    if resultado is None:
-        return
+    if rows:
 
-    motorista, km = resultado
+        texto = "🏆 **RANKING SEMANAL TRANS BARBA** 🏆\n\n"
+
+        medalhas = ["🥇", "🥈", "🥉"]
+
+        for pos, (nome, km) in enumerate(rows, start=1):
+
+            if pos <= 3:
+                texto += f"{medalhas[pos-1]} {nome} — {km:,} km\n"
+            else:
+                texto += f"{pos}. {nome} — {km:,} km\n"
+
+        await canal_ranking.send(texto)
+
+    else:
+
+        await canal_ranking.send(
+            "Nenhum registo encontrado esta semana."
+        )
+
+    with conn.cursor() as cur:
+
+        cur.execute("DELETE FROM ranking_semanal")
+        conn.commit()
 
     try:
 
-        mensagem = await canal.fetch_message(MENSAGEM_LIDER_ID)
+        if canal_lider:
 
-        await mensagem.edit(
-            content=
-            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
-            f"🚚 Motorista: **{motorista}**\n"
-            f"📏 Quilómetros: **{km:,} km**"
-        )
+            mensagem = await canal_lider.fetch_message(
+                MENSAGEM_LIDER_ID
+            )
+
+            await mensagem.edit(
+                content=
+                "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
+                "🚚 Ainda não existe líder esta semana.\n"
+                "📏 Quilómetros: **0 km**"
+            )
 
     except Exception as e:
-        print(f"Erro ao atualizar líder: {e}")
 
+        print(
+            f"Erro ao reiniciar mensagem do líder: {e}"
+        )
+
+    print("Ranking semanal publicado e reiniciado.")
 @bot.command()
 async def criar_lider(ctx):
 
