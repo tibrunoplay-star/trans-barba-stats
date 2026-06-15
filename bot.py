@@ -178,7 +178,6 @@ async def on_message(message):
         print("ERRO:", e)
 
 await bot.process_commands(message)
-```
 
 @bot.command()
 async def ranking(ctx):
