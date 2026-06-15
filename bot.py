@@ -11,13 +11,10 @@ async def publicar_ranking():
         return
 
     with conn.cursor() as cur:
+cur.execute("DELETE FROM ranking_semanal")
+cur.execute("DELETE FROM lider_semanal")
 
-        cur.execute("""
-            SELECT motorista, km
-            FROM ranking_semanal
-            ORDER BY km DESC
-            LIMIT 10
-        """)
+conn.commit()
 
         rows = cur.fetchall()
 
@@ -38,11 +35,33 @@ async def publicar_ranking():
 
     await canal.send(texto)
 
-    with conn.cursor() as cur:
-        cur.execute("DELETE FROM ranking_semanal")
-        conn.commit()
+with conn.cursor() as cur:
+    cur.execute("DELETE FROM ranking_semanal")
+    cur.execute("DELETE FROM lider_semanal")
 
-    print("Ranking semanal publicado e reiniciado.")
+conn.commit()
+
+try:
+
+    canal_lider = bot.get_channel(CANAL_LIDER_ID)
+
+    if canal_lider:
+
+        mensagem = await canal_lider.fetch_message(
+            MENSAGEM_LIDER_ID
+        )
+
+        await mensagem.edit(
+            content=
+            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
+            "🚚 Ainda não existe líder esta semana.\n"
+            "📏 Quilómetros: **0 km**"
+        )
+
+except Exception as e:
+    print(f"Erro ao reiniciar líder: {e}")
+
+print("Ranking semanal publicado e reiniciado.")
 
 import os
 import re
@@ -57,12 +76,20 @@ conn = psycopg.connect(DATABASE_URL)
 
 with conn.cursor() as cur:
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS ranking_semanal (
-            motorista TEXT PRIMARY KEY,
-            km BIGINT NOT NULL DEFAULT 0
-        )
-    """)
-    conn.commit()
+CREATE TABLE IF NOT EXISTS ranking_semanal (
+motorista TEXT PRIMARY KEY,
+km BIGINT NOT NULL DEFAULT 0
+)
+""")
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS lider_semanal (
+        motorista TEXT PRIMARY KEY,
+        km BIGINT NOT NULL DEFAULT 0
+    )
+""")
+
+conn.commit()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -91,46 +118,26 @@ async def on_ready():
 @bot.event
 async def on_message(message):
 
-    if message.author.bot and message.embeds:
+    with conn.cursor() as cur:
 
-        try:
-            embed = message.embeds[0]
+# Ranking semanal (acumula km)
+cur.execute("""
+    INSERT INTO ranking_semanal (motorista, km)
+    VALUES (%s, %s)
+    ON CONFLICT (motorista)
+    DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+""", (motorista, km))
 
-            if not embed.author:
-                await bot.process_commands(message)
-                return
+# Líder semanal (guarda apenas a melhor entrega)
+cur.execute("""
+    INSERT INTO lider_semanal (motorista, km)
+    VALUES (%s, %s)
+    ON CONFLICT (motorista)
+    DO UPDATE SET km =
+        GREATEST(lider_semanal.km, EXCLUDED.km)
+""", (motorista, km))
 
-            motorista = embed.author.name
-
-            detalhes = None
-
-            for field in embed.fields:
-                if field.name == "Detalhes":
-                    detalhes = field.value
-                    break
-
-            if detalhes:
-
-                match = re.search(
-                    r"Distância Aceita:\s*([\d\s]+)\s*km",
-                    detalhes
-                )
-
-                if match:
-
-                    km = int(match.group(1).replace(" ", ""))
-
-                    with conn.cursor() as cur:
-
-                        cur.execute("""
-                            INSERT INTO ranking_semanal (motorista, km)
-                            VALUES (%s, %s)
-                            ON CONFLICT (motorista)
-                            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-                        """, (motorista, km))
-
-                        conn.commit()
-
+conn.commit()
                     print(f"{motorista} +{km} km")
 
                     await atualizar_lider()
@@ -177,12 +184,12 @@ async def atualizar_lider():
 
     with conn.cursor() as cur:
 
-        cur.execute("""
-            SELECT motorista, km
-            FROM ranking_semanal
-            ORDER BY km DESC
-            LIMIT 1
-        """)
+       cur.execute("""
+SELECT motorista, km
+FROM lider_semanal
+ORDER BY km DESC
+LIMIT 1
+""")
 
         resultado = cur.fetchone()
 
