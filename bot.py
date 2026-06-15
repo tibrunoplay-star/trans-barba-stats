@@ -147,7 +147,6 @@ async def on_message(message):
                     detalhes
                 )
 
-```
             if match:
 
                 km = int(match.group(1).replace(" ", ""))
