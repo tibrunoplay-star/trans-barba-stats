@@ -103,7 +103,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_message(message):
 
-if message.author.bot and message.embeds:
+    if message.author.bot and message.embeds:
 
     try:
         embed = message.embeds[0]
