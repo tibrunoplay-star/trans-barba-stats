@@ -165,7 +165,7 @@ async def ranking(ctx):
 
     await ctx.send(f"```{texto}```")
 
-  async def publicar_ranking():
+async def atualizar_lider():
 
 CANAL_LIDER_ID = 1515340410694664344
 MENSAGEM_LIDER_ID = 1515533850128945242
@@ -232,6 +232,7 @@ if canal_ranking is None:
         )
 
     print("Ranking semanal publicado e reiniciado.")
+
 @bot.command()
 async def criar_lider(ctx):
 
