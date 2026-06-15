@@ -232,6 +232,33 @@ async def criar_lider(ctx):
     msg = await ctx.send("A carregar líder...")
 
     print("ID DA MENSAGEM:", msg.id)
-    
+
+async def atualizar_lider():
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def reset_lider(ctx):
+
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE lider_semanal")
+
+    conn.commit()
+
+    canal = bot.get_channel(CANAL_LIDER_ID)
+
+    if canal:
+        try:
+            mensagem = await canal.fetch_message(MENSAGEM_LIDER_ID)
+
+            await mensagem.edit(
+                content="👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n🚚 Nenhum líder definido."
+            )
+
+        except Exception as e:
+            print(f"Erro ao atualizar mensagem: {e}")
+
+    await ctx.send("✅ Passa-me se fores capaz resetado.")
+
+bot.run(TOKEN)
+
 bot.run(TOKEN)
     
