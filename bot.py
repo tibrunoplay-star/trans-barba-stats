@@ -38,32 +38,10 @@ async def publicar_ranking():
 
     await canal.send(texto)
 
-  with conn.cursor() as cur:
-      cur.execute("DELETE FROM ranking_semanal")
-      cur.execute("DELETE FROM lider_semanal")
-      conn.commit()
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM ranking_semanal")
+        conn.commit()
 
-    try:
-
-    canal_lider = bot.get_channel(CANAL_LIDER_ID)
-
-    if canal_lider:
-
-        mensagem = await canal_lider.fetch_message(
-            MENSAGEM_LIDER_ID
-        )
-
-        await mensagem.edit(
-            content=
-            "👑 **PASSA-ME SE FORES CAPAZ** 👑\n\n"
-            "🚚 Ainda não existe líder esta semana.\n"
-            "📏 Quilómetros: **0 km**"
-        )
-
-except Exception as e:
-
-    print(f"Erro ao reiniciar líder: {e}")
-    
     print("Ranking semanal publicado e reiniciado.")
 
 import os
@@ -84,14 +62,6 @@ with conn.cursor() as cur:
             km BIGINT NOT NULL DEFAULT 0
         )
     """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS lider_semanal (
-            motorista TEXT PRIMARY KEY,
-            km BIGINT NOT NULL DEFAULT 0
-        )
-    """)
-
     conn.commit()
 
 intents = discord.Intents.default()
@@ -150,26 +120,16 @@ async def on_message(message):
 
                     km = int(match.group(1).replace(" ", ""))
 
-                   with conn.cursor() as cur:
+                    with conn.cursor() as cur:
 
-    # Ranking semanal (acumula)
-    cur.execute("""
-        INSERT INTO ranking_semanal (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-    """, (motorista, km))
+                        cur.execute("""
+                            INSERT INTO ranking_semanal (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+                        """, (motorista, km))
 
-    # Líder semanal (guarda apenas a melhor entrega)
-    cur.execute("""
-        INSERT INTO lider_semanal (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km =
-            GREATEST(lider_semanal.km, EXCLUDED.km)
-    """, (motorista, km))
-
-    conn.commit()
+                        conn.commit()
 
                     print(f"{motorista} +{km} km")
 
@@ -185,12 +145,12 @@ async def ranking(ctx):
 
     with conn.cursor() as cur:
 
-       cur.execute("""
-    SELECT motorista, km
-    FROM lider_semanal
-    ORDER BY km DESC
-    LIMIT 10
-""")
+        cur.execute("""
+            SELECT motorista, km
+            FROM ranking_semanal
+            ORDER BY km DESC
+            LIMIT 10
+        """)
 
         rows = cur.fetchall()
 
@@ -253,3 +213,4 @@ async def criar_lider(ctx):
     print("ID DA MENSAGEM:", msg.id)
     
 bot.run(TOKEN)
+    
