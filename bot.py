@@ -71,6 +71,7 @@ import re
 import discord
 import psycopg
 from discord.ext import commands
+import asyncio
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -228,6 +229,11 @@ async def atualizar_lider():
             f"🚚 Motorista: **{motorista}**\n"
             f"📏 Quilómetros: **{km:,} km**"
         )
+        
+        await asyncio.sleep(10)
+        
+        await msg.delete()
+    
 
     except Exception as e:
         print(f"Erro ao atualizar líder: {e}")
