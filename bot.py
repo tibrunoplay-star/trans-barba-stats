@@ -224,7 +224,7 @@ async def atualizar_lider():
             f"📏 Quilómetros: **{km:,} km**"
         )
         
-        await canal.send(
+        msg = await canal.send(
             f"🔥 **Novo líder semanal!**\n"
             f"🚚 Motorista: **{motorista}**\n"
             f"📏 Quilómetros: **{km:,} km**"
