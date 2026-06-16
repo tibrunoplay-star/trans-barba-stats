@@ -230,7 +230,7 @@ async def atualizar_lider():
             f"📏 Quilómetros: **{km:,} km**"
         )
         
-        await asyncio.sleep(10)
+        await asyncio.sleep(3)
         
         await msg.delete()
     
