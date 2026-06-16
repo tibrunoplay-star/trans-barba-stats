@@ -222,6 +222,12 @@ async def atualizar_lider():
             f"🚚 Motorista: **{motorista}**\n"
             f"📏 Quilómetros: **{km:,} km**"
         )
+        
+        await canal.send(
+            f"🔥 **Novo líder semanal!**\n"
+            f"🚚 Motorista: **{motorista}**\n"
+            f"📏 Quilómetros: **{km:,} km**"
+        )
 
     except Exception as e:
         print(f"Erro ao atualizar líder: {e}")
