@@ -93,6 +93,12 @@ with conn.cursor() as cur:
             km BIGINT NOT NULL DEFAULT 0
         )
     """)
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS ranking_total (
+            motorista TEXT PRIMARY KEY,
+            km BIGINT NOT NULL DEFAULT 0
+      )
 
 conn.commit()
 
