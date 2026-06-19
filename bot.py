@@ -93,7 +93,13 @@ with conn.cursor() as cur:
             km BIGINT NOT NULL DEFAULT 0
         )
     """)
-
+    
+    cur.execute("""
+       CREATE TABLE IF NOT EXISTS ranking_total (
+            motorista TEXT PRIMARY KEY,
+            km BIGINT NOT NULL DEFAULT 0
+        )
+    """)
 conn.commit()
 
 intents = discord.Intents.default()
@@ -150,7 +156,14 @@ async def on_message(message):
                                 GREATEST(lider_semanal.km, EXCLUDED.km)
                         """, (motorista, km))
 
-                    conn.commit()
+                        cur.execute("""
+                            INSERT INTO ranking_total (motorista, km)
+                            VALUES (%s, %s)
+                            ON CONFLICT (motorista)
+                            DO UPDATE SET km = ranking_total.km + EXCLUDED.km
+                        """, (motorista, km))
+                    c
+                    onn.commit()
 
                     print(f"{motorista} +{km} km")
 
