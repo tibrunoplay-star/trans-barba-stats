@@ -162,8 +162,8 @@ async def on_message(message):
                             ON CONFLICT (motorista)
                             DO UPDATE SET km = ranking_total.km + EXCLUDED.km
                         """, (motorista, km))
-                    c
-                    onn.commit()
+                    
+                 conn.commit()
 
                     print(f"{motorista} +{km} km")
 
