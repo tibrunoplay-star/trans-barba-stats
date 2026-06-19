@@ -139,35 +139,42 @@ async def on_message(message):
 
                     km = int(match.group(1).replace(" ", ""))
 
-with conn.cursor() as cur:
+                    with conn.cursor() as cur:
 
-    cur.execute("""
-        INSERT INTO ranking_semanal (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
-    """, (motorista, km))
+                         if match:
 
-    cur.execute("""
-        INSERT INTO lider_semanal (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km =
-            GREATEST(lider_semanal.km, EXCLUDED.km)
-    """, (motorista, km))
+                            km = int(match.group(1).replace(" ", ""))
+                        
+                            with conn.cursor() as cur:
+                        
+                                cur.execute("""
+                                    INSERT INTO ranking_semanal (motorista, km)
+                                    VALUES (%s, %s)
+                                    ON CONFLICT (motorista)
+                                    DO UPDATE SET km = ranking_semanal.km + EXCLUDED.km
+                                """, (motorista, km))
+                        
+                                cur.execute("""
+                                    INSERT INTO lider_semanal (motorista, km)
+                                    VALUES (%s, %s)
+                                    ON CONFLICT (motorista)
+                                    DO UPDATE SET km =
+                                        GREATEST(lider_semanal.km, EXCLUDED.km)
+                                """, (motorista, km))
+                        
+                                cur.execute("""
+                                    INSERT INTO ranking_total (motorista, km)
+                                    VALUES (%s, %s)
+                                    ON CONFLICT (motorista)
+                                    DO UPDATE SET km = ranking_total.km + EXCLUDED.km
+                                """, (motorista, km))
+                        
+                            conn.commit()
+                        
+                            print(f"{motorista} +{km} km")
+                        
+                            await atualizar_lider()
 
-    cur.execute("""
-        INSERT INTO ranking_total (motorista, km)
-        VALUES (%s, %s)
-        ON CONFLICT (motorista)
-        DO UPDATE SET km = ranking_total.km + EXCLUDED.km
-    """, (motorista, km))
-
-conn.commit()
-
-print(f"{motorista} +{km} km")
-
-await atualizar_lider()
         except Exception as e:
             print("ERRO:", e)
 
